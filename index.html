@@ -3,11 +3,246 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chat Widget</title>
+<title>Your AI Assistant</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #f5f7ff;
+    background: #0a0e1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* Animated gradient backdrop */
+  .backdrop {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 25%, rgba(99, 102, 241, 0.35), transparent 45%),
+      radial-gradient(circle at 80% 30%, rgba(168, 85, 247, 0.30), transparent 45%),
+      radial-gradient(circle at 50% 90%, rgba(56, 189, 248, 0.28), transparent 50%);
+    filter: blur(10px);
+    animation: drift 16s ease-in-out infinite alternate;
+  }
+
+  @keyframes drift {
+    0%   { transform: scale(1) translate(0, 0); }
+    100% { transform: scale(1.15) translate(-2%, 2%); }
+  }
+
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(circle at center, #000 0%, transparent 75%);
+    -webkit-mask-image: radial-gradient(circle at center, #000 0%, transparent 75%);
+  }
+
+  .hero {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 0 24px;
+    max-width: 720px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(12px);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    color: #c7d2fe;
+    margin-bottom: 28px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.6); }
+    70%  { box-shadow: 0 0 0 10px rgba(74, 222, 128, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+  }
+
+  .orb {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #818cf8, #a855f7 55%, #38bdf8);
+    box-shadow:
+      0 0 60px rgba(129, 140, 248, 0.6),
+      inset 0 0 30px rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: float 5s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-12px); }
+  }
+
+  .orb svg { width: 46px; height: 46px; }
+
+  h1 {
+    font-size: clamp(34px, 6vw, 56px);
+    line-height: 1.08;
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    margin-bottom: 18px;
+  }
+
+  h1 .grad {
+    background: linear-gradient(120deg, #a5b4fc, #d8b4fe, #7dd3fc);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  p.sub {
+    font-size: clamp(15px, 2.4vw, 19px);
+    line-height: 1.6;
+    color: #aab3cf;
+    max-width: 540px;
+    margin: 0 auto 36px;
+  }
+
+  p.sub strong {
+    color: #c4e8d4;
+    font-weight: 600;
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 30px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    color: #0a0e1a;
+    background: linear-gradient(120deg, #c7d2fe, #f5f3ff);
+    box-shadow: 0 10px 40px rgba(168, 85, 247, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .cta:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 50px rgba(168, 85, 247, 0.5);
+  }
+
+  .features {
+    margin-top: 44px;
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    font-size: 13.5px;
+    color: #c3cbe6;
+  }
+
+  .chip svg { width: 16px; height: 16px; opacity: 0.85; }
+
+  .hint {
+    position: absolute;
+    bottom: 28px;
+    right: 30px;
+    z-index: 2;
+    font-size: 13px;
+    color: #8b93b0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: float 5s ease-in-out infinite;
+  }
+
+  @media (max-height: 600px) {
+    .orb { width: 70px; height: 70px; margin-bottom: 20px; }
+    .badge { margin-bottom: 18px; }
+    .features { margin-top: 26px; }
+  }
+</style>
 </head>
 <body>
+  <div class="backdrop"></div>
+  <div class="grid-overlay"></div>
 
-<h1>Hello, World!</h1>
-<script src="https://platform.pushable.ai/embed.js" data-agent="pk_2dbbe91ed83e3cbae516f6216af91d0b" data-api="https://api.pushable.ai" async></script>
+  <main class="hero">
+    <span class="badge"><span class="dot"></span> Online &amp; ready to help</span>
+
+    <div class="orb">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        <circle cx="9" cy="10" r="1" fill="#fff"/>
+        <circle cx="15" cy="10" r="1" fill="#fff"/>
+      </svg>
+    </div>
+
+    <h1>Meet your <span class="grad">AI Assistant</span></h1>
+    <p class="sub">
+      Book a <strong>medical marijuana appointment</strong> or get your questions answered — instantly, any time of day.
+    </p>
+
+    <div class="features">
+      <span class="chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7v8l10-12h-7z"/></svg>
+        Lightning fast
+      </span>
+      <span class="chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#7dd3fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Private &amp; secure
+      </span>
+      <span class="chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#d8b4fe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        Available 24/7
+      </span>
+    </div>
+  </main>
+
+  <div class="hint">
+    Tap the chat bubble
+    <svg style="margin-left:30px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path style="margin-left:30px;"  d="M5 12h14M13 18l6-6-6-6"/></svg>
+  </div>
+
+<script src="https://platform.pushable.ai/embed.js" data-agent="pk_61c504aca0f67b80e54458892f0d17f7" data-api="https://api.pushable.ai" async></script>
 </body>
 </html>
